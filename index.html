@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lola · XV · La Travesía</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@200;300;400&family=DM+Mono:wght@300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 :root {
   --earth:   #0d0b08;
@@ -657,9 +657,31 @@ footer span { color:var(--fern); }
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// Cargar Leaflet dinámicamente y esperar que esté listo
+function loadLeaflet(cb) {
+  if(window.L) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+  s.onload = cb;
+  s.onerror = () => {
+    // fallback a unpkg
+    const s2 = document.createElement('script');
+    s2.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s2.onload = cb;
+    s2.onerror = () => {
+      document.getElementById('map').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#6a8a48;font-family:DM Mono,monospace;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;background:#1c1610">Mapa no disponible sin conexión</div>';
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  loadLeaflet(initApp);
+});
+
+function initApp() {
 // ══ CANVAS PARTÍCULAS BOSQUE ══
 const canvas = document.getElementById('bgCanvas');
 const ctx    = canvas.getContext('2d');
@@ -1239,7 +1261,7 @@ window.submitPhoto   = submitPhoto;
 window.openLb        = openLb;
 window.closeLb       = closeLb;
 
-}); // fin DOMContentLoaded
+} // fin initApp
 </script>
 </body>
 </html>
