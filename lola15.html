@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lola · XV · La Travesía</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@200;300;400&family=DM+Mono:wght@300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root {
+  --earth:   #0d0b08;
+  --bark:    #1c1610;
+  --moss:    #243318;
+  --forest:  #2e4420;
+  --fern:    #3d5c28;
+  --sage:    #6a8a48;
+  --lichen:  #98b070;
+  --stone:   #6e6558;
+  --rock:    #4a4238;
+  --sand:    #c8b48a;
+  --cream:   #e8d8b0;
+  --white:   #f0e8d0;
+  --gold:    #a87820;
+  --amber:   #c8982a;
+  --rust:    #7a3a10;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body {
+  background: var(--earth);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* ══ HERO ══ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 100%, #3a522844 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 20% 60%, #2d3d1e33 0%, transparent 50%),
+    linear-gradient(180deg, #1a1610 0%, #2a2016 40%, #1a1610 100%);
+}
+
+/* Silueta bosque */
+.hero-forest {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  pointer-events: none;
+}
+
+/* partículas */
+#bgCanvas {
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative; z-index: 2;
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.5em;
+  color: var(--sage);
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: riseIn 1s 0.3s ease forwards;
+}
+.hero-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: clamp(3.8rem, 15vw, 12rem);
+  line-height: 0.88;
+  color: var(--white);
+  letter-spacing: -0.03em;
+  opacity: 0;
+  animation: riseIn 1.2s 0.5s ease forwards;
+}
+.hero-name em {
+  font-style: italic;
+  color: var(--lichen);
+  display: block;
+}
+.roman {
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(0.75rem, 2.5vw, 1.05rem);
+  letter-spacing: 0.5em;
+  color: var(--amber);
+  margin-top: 1rem;
+  opacity: 0;
+  animation: riseIn 1s 0.8s ease forwards;
+}
+.hero-tagline {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(0.85rem, 3vw, 1.4rem);
+  color: var(--stone);
+  margin-top: 1.2rem;
+  padding: 0 1rem;
+  opacity: 0;
+  animation: riseIn 1s 1s ease forwards;
+}
+.hero-pills {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 0 0.5rem;
+  opacity: 0;
+  animation: riseIn 1s 1.2s ease forwards;
+}
+.pill {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--sage);
+  border: 1px solid var(--moss);
+  padding: 0.28rem 0.7rem;
+}
+.pill.sep { border: none; color: var(--amber); padding: 0.28rem 0.1rem; }
+
+@media (max-width: 480px) {
+  .hero-name { font-size: clamp(3.2rem, 16vw, 5rem); line-height: 0.9; }
+  .hero-tagline { font-size: 0.88rem; padding: 0 1.5rem; }
+  .roman { font-size: 0.7rem; letter-spacing: 0.4em; }
+  .hero-pills { gap: 0.3rem; }
+  .pill { font-size: 0.48rem; padding: 0.25rem 0.55rem; }
+  .eyebrow { font-size: 0.52rem; letter-spacing: 0.3em; }
+}
+
+/* music player */
+.music-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  background: #1a1610f0;
+  backdrop-filter: blur(12px);
+  border-top: 1px solid #3a522844;
+  padding: 0.7rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+.music-btn {
+  width: 34px; height: 34px;
+  border: 1px solid var(--fern);
+  background: transparent;
+  color: var(--sage);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  transition: all .3s;
+  flex-shrink: 0;
+}
+.music-btn:hover { background: var(--moss); color: var(--lichen); }
+.music-info { flex: 1; overflow: hidden; }
+.music-track {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--sage);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.music-artist {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--stone);
+  margin-top: 0.1rem;
+}
+.music-wave {
+  display: flex; align-items: center; gap: 2px;
+  height: 18px;
+}
+.wave-bar {
+  width: 2px;
+  background: var(--fern);
+  border-radius: 1px;
+  animation: waveDance var(--d) ease-in-out infinite alternate;
+  transform-origin: bottom;
+}
+.wave-bar.paused { animation-play-state: paused; }
+@keyframes waveDance {
+  from { height: 3px; opacity: 0.4; }
+  to   { height: var(--h); opacity: 0.9; }
+}
+.scroll-cue {
+  position: absolute; bottom: 3.5rem; left: 50%; transform: translateX(-50%);
+  z-index: 2; display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  opacity: 0; animation: riseIn 1s 1.5s ease forwards;
+}
+.scroll-line { width:1px;height:44px;background:linear-gradient(180deg,var(--sage),transparent);animation:pulse 2s ease-in-out infinite; }
+.scroll-txt { font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.4em;color:var(--stone);text-transform:uppercase; }
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.8}}
+@keyframes riseIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ NAV ══ */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: #1a1610f0;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid #3a522844;
+  padding: 0.85rem 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;color:var(--lichen); }
+.nav-links { display:flex;gap:2rem;list-style:none; }
+.nav-links a { font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--stone);text-decoration:none;transition:color .3s; }
+.nav-links a:hover { color:var(--cream); }
+
+/* ══ SECCIONES ══ */
+.sec { position:relative;z-index:1;padding:5rem 2rem; }
+.sec-hdr { text-align:center;margin-bottom:4rem; }
+.sec-eye { font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.45em;color:var(--amber);text-transform:uppercase;margin-bottom:1rem; }
+.sec-title { font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(2rem,5vw,3.2rem);color:var(--white);line-height:1.1; }
+.sec-title em { font-style:italic;color:var(--lichen); }
+.divider { border:none;border-top:1px solid #3a522833;margin:0; }
+
+/* ══ MAPA ══ */
+#mapSection { padding: 0; }
+#mapSection .sec-hdr { padding: 5rem 2rem 3rem; margin-bottom: 0; }
+
+#map {
+  width: 100%;
+  height: 520px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Leaflet overrides — tema tierra/bosque */
+.leaflet-container { background: #2a2016; }
+.leaflet-tile { filter: saturate(0.5) brightness(0.55) sepia(0.4); }
+
+/* popups personalizados */
+.leaflet-popup-content-wrapper {
+  background: #1c1610 !important;
+  border: 1px solid #3d5c28 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 8px 32px #00000099 !important;
+  color: var(--white) !important;
+}
+.leaflet-popup-tip { background: #1c1610 !important; }
+.leaflet-popup-content { margin: 1.2rem 1.4rem !important; min-width: 230px; }
+.popup-place { font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.3em;color:var(--amber);text-transform:uppercase;margin-bottom:.4rem; }
+.popup-name  { font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--white);margin-bottom:.5rem; }
+.popup-desc  { font-size:.8rem;color:#8a8070;line-height:1.6;margin-bottom:.9rem; }
+.popup-tags  { display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem; }
+.popup-tag   { font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sage);border:1px solid var(--moss);padding:.22rem .55rem; }
+.popup-actions { display:flex;gap:.6rem;align-items:center;flex-wrap:wrap; }
+.popup-status { font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;padding:.26rem .65rem;border:1px solid; }
+.popup-status.pending { color:var(--stone);border-color:var(--rock); }
+.popup-status.visited { color:var(--amber);border-color:var(--amber);background:#c8980a18; }
+.popup-btn { font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;background:transparent;border:1px solid var(--fern);color:var(--sage);padding:.26rem .85rem;cursor:pointer;transition:all .3s; }
+.popup-btn:hover { background:var(--moss);color:var(--cream); }
+
+/* ══ MARCADORES ESTILO JUEGO ══ */
+.node-marker {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.node-marker:hover { transform: scale(1.12) !important; }
+
+.node-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid;
+  pointer-events: none;
+}
+
+.node-body {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid;
+  position: relative; z-index: 2;
+  transition: all 0.4s;
+}
+
+/* locked */
+.node-marker.locked .node-body {
+  width: 40px; height: 40px;
+  background: radial-gradient(circle at 35% 35%, #2e3828, #1a1e14);
+  border-color: #3d5228; color: #3d5228; font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.node-marker.locked .node-ring {
+  width: 54px; height: 54px; top:-7px; left:-7px;
+  border-color: #3d5228; opacity:0.25;
+}
+
+/* active */
+.node-marker.active .node-body {
+  width: 52px; height: 52px;
+  background: radial-gradient(circle at 35% 35%, #5a7a38, #2e4420);
+  border-color: #98b070; color: #f0e8d0; font-size: 1.3rem;
+  box-shadow: 0 0 24px #6a8a4888, 0 2px 16px rgba(0,0,0,0.5);
+  animation: activePulse 2s ease-in-out infinite alternate;
+}
+@keyframes activePulse {
+  from { box-shadow: 0 0 16px #6a8a4866, 0 2px 16px rgba(0,0,0,.5); }
+  to   { box-shadow: 0 0 32px #6a8a48bb, 0 2px 16px rgba(0,0,0,.5); }
+}
+.node-marker.active .node-ring {
+  width: 70px; height: 70px; top:-9px; left:-9px;
+  border-color: #98b070;
+  animation: ringPulse 2s ease-in-out infinite;
+}
+@keyframes ringPulse {
+  0%,100% { transform:scale(1); opacity:0.5; }
+  50%      { transform:scale(1.3); opacity:0; }
+}
+
+/* visited */
+.node-marker.visited .node-body {
+  width: 52px; height: 52px;
+  background: radial-gradient(circle at 35% 35%, #c8a040, #7a5818);
+  border-color: #e0c060; color: #fff8e8; font-size: 1.3rem;
+  box-shadow: 0 0 28px #c8980a88, 0 2px 16px rgba(0,0,0,0.5);
+  animation: visitedGlow 3s ease-in-out infinite alternate;
+}
+@keyframes visitedGlow {
+  from { box-shadow: 0 0 20px #c8980a55, 0 2px 16px rgba(0,0,0,.5); }
+  to   { box-shadow: 0 0 40px #c8980aaa, 0 2px 16px rgba(0,0,0,.5); }
+}
+.node-marker.visited .node-ring {
+  width: 70px; height: 70px; top:-9px; left:-9px;
+  border-color: #e0c060; opacity:0.4;
+  animation: ringPulse 2.5s ease-in-out infinite;
+}
+
+/* estrella */
+.node-star {
+  position:absolute; top:-12px; right:-10px;
+  font-size:1rem; display:none; z-index:3;
+  animation: starPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.node-marker.visited .node-star { display:block; }
+@keyframes starPop {
+  from { transform:scale(0) rotate(-30deg); opacity:0; }
+  to   { transform:scale(1) rotate(0deg); opacity:1; }
+}
+
+/* etiqueta */
+.node-label {
+  position:absolute; bottom:-26px; left:50%; transform:translateX(-50%);
+  white-space:nowrap; font-family:'DM Mono',monospace;
+  font-size:0.52rem; letter-spacing:0.12em; text-transform:uppercase;
+  padding:2px 6px; pointer-events:none; transition:all 0.4s;
+}
+.node-marker.locked  .node-label { color:#4a5a38; background:rgba(10,10,6,.7); }
+.node-marker.active  .node-label { color:#c8d8a0; background:rgba(10,10,6,.8); }
+.node-marker.visited .node-label { color:#e8c870; background:rgba(10,10,6,.8); }
+
+/* partículas celebración */
+.particle {
+  position:fixed; pointer-events:none; border-radius:50%; z-index:9999;
+  animation: particleFly var(--dur) ease-out forwards;
+}
+@keyframes particleFly {
+  0%   { transform:translate(0,0) scale(1); opacity:1; }
+  100% { transform:translate(var(--tx),var(--ty)) scale(0); opacity:0; }
+}
+
+/* progreso del mapa */
+.map-progress {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  border: 1px solid #3a522844;
+  border-top: none;
+  background: #1a1610cc;
+}
+.progress-bar-wrap { flex: 1; height: 2px; background: var(--bark); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--fern), var(--amber)); transition: width 0.8s ease; width: 0%; }
+.progress-txt { font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--stone);text-transform:uppercase;white-space:nowrap; }
+.progress-count { font-family:'Playfair Display',serif;font-style:italic;font-size:.9rem;color:var(--lichen);white-space:nowrap; }
+
+/* ══ GALERÍA ══ */
+.gallery-toolbar {
+  max-width:1100px;margin:0 auto 2.5rem;
+  display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;
+}
+.btn-add {
+  display:inline-flex;align-items:center;gap:.6rem;
+  background:transparent;border:1px solid var(--moss);color:var(--lichen);
+  font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;
+  padding:.7rem 1.4rem;cursor:pointer;transition:all .3s;
+}
+.btn-add:hover { background:var(--moss);color:var(--cream); }
+.photo-grid { max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem; }
+.photo-card { background:var(--bark);border:1px solid #3a522833;overflow:hidden;transition:border-color .3s;animation:riseIn .5s ease both; }
+.photo-card:hover { border-color:var(--fern); }
+.photo-card img { width:100%;aspect-ratio:4/3;object-fit:cover;display:block;transition:transform .5s;cursor:pointer; }
+.photo-card:hover img { transform:scale(1.03); }
+.card-body { padding:1rem 1.2rem; }
+.card-place { font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.3em;color:var(--amber);text-transform:uppercase;margin-bottom:.3rem; }
+.card-caption { font-family:'Playfair Display',serif;font-style:italic;font-size:.92rem;color:var(--cream);line-height:1.4;margin-bottom:.3rem; }
+.card-author { font-size:.7rem;color:var(--stone); }
+.empty-gallery { grid-column:1/-1;text-align:center;padding:5rem 2rem;border:1px dashed #3a522844; }
+.empty-gallery .e-icon { font-size:2.5rem;opacity:.3;margin-bottom:1rem; }
+.empty-gallery p { font-family:'Playfair Display',serif;font-style:italic;font-size:1.05rem;color:var(--rock); }
+
+/* ══ MENSAJE ══ */
+.msg-card {
+  max-width:660px;margin:0 auto;
+  background:linear-gradient(135deg,var(--bark),var(--moss));
+  border:1px solid #4e6e3555;padding:4rem 3.5rem;position:relative;
+}
+.msg-card::before {
+  content:'"';font-family:'Playfair Display',serif;font-size:7rem;
+  color:var(--moss);position:absolute;top:-1.5rem;left:1.5rem;line-height:1;opacity:.6;
+}
+.msg-text {
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(1.1rem,2.5vw,1.45rem);line-height:1.75;color:var(--white);
+  margin-bottom:2.5rem;position:relative;
+}
+.msg-firma { font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.4em;color:var(--amber);text-transform:uppercase; }
+
+/* ══ FOOTER ══ */
+footer { position:relative;z-index:1;border-top:1px solid #3a522833;padding:2rem;text-align:center;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.3em;color:var(--rock);text-transform:uppercase;padding-bottom:4rem; }
+footer span { color:var(--fern); }
+
+/* ══ MODAL ══ */
+.overlay { display:none;position:fixed;inset:0;background:rgba(10,10,6,.88);backdrop-filter:blur(10px);z-index:500;align-items:center;justify-content:center;padding:1rem; }
+.overlay.open { display:flex; }
+.modal { background:var(--bark);border:1px solid var(--moss);padding:2.5rem;width:100%;max-width:450px;animation:riseIn .4s ease; }
+.modal h3 { font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:400;color:var(--white);margin-bottom:.3rem; }
+.modal .modal-sub { font-size:.8rem;color:var(--stone);margin-bottom:2rem; }
+.field { margin-bottom:1.1rem; }
+.field label { display:block;font-family:'DM Mono',monospace;font-size:.57rem;letter-spacing:.35em;text-transform:uppercase;color:var(--sage);margin-bottom:.4rem; }
+.field input,.field textarea,.field select { width:100%;background:var(--earth);border:1px solid var(--moss);color:var(--white);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:.7rem 1rem;outline:none;transition:border-color .3s; }
+.field input:focus,.field textarea:focus,.field select:focus { border-color:var(--sage); }
+.field textarea { min-height:72px;resize:vertical; }
+.field select option { background:var(--bark); }
+.dropzone { border:1px dashed var(--moss);padding:1.7rem;text-align:center;cursor:pointer;transition:all .3s;margin-bottom:1.4rem; }
+.dropzone:hover,.dropzone.over { border-color:var(--sage);background:#3a522818; }
+.dropzone p { font-size:.77rem;color:var(--stone);margin:0; }
+.modal-btns { display:flex;gap:.8rem;justify-content:flex-end; }
+.btn-sec { background:transparent;border:1px solid var(--moss);color:var(--stone);font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;padding:.6rem 1.2rem;cursor:pointer;transition:all .3s; }
+.btn-sec:hover { border-color:var(--sage);color:var(--white); }
+.btn-prim { background:var(--forest);border:1px solid var(--fern);color:var(--cream);font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;padding:.6rem 1.4rem;cursor:pointer;transition:all .3s; }
+.btn-prim:hover { background:var(--fern);color:var(--white); }
+
+/* lightbox */
+.lightbox { display:none;position:fixed;inset:0;background:rgba(10,10,6,.95);z-index:600;align-items:center;justify-content:center;padding:2rem;cursor:pointer; }
+.lightbox.open { display:flex; }
+.lightbox img { max-width:90vw;max-height:85vh;object-fit:contain;border:1px solid var(--moss); }
+.lb-close { position:absolute;top:1.5rem;right:2rem;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.3em;color:var(--stone);text-transform:uppercase;cursor:pointer; }
+
+@media(max-width:600px){ .nav-links{display:none;} .gallery-toolbar{flex-direction:column;align-items:flex-start;} }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-bg"></div>
+
+  <!-- Silueta bosque patagónico -->
+  <svg class="hero-forest" viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3a5228" stop-opacity="0.7"/>
+        <stop offset="100%" stop-color="#1a1610" stop-opacity="1"/>
+      </linearGradient>
+      <linearGradient id="fg2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2d3d1e" stop-opacity="0.85"/>
+        <stop offset="100%" stop-color="#1a1610" stop-opacity="1"/>
+      </linearGradient>
+    </defs>
+    <!-- Montañas fondo -->
+    <path d="M0,320 L0,180 L80,130 L160,170 L260,80 L360,150 L440,100 L540,160 L640,70 L740,140 L840,85 L940,150 L1040,75 L1140,130 L1240,90 L1360,120 L1440,100 L1440,320Z" fill="url(#fg)" opacity="0.5"/>
+    <!-- Árboles silueta -->
+    <path d="M0,320 L0,260 L30,220 L50,240 L70,200 L90,230 L120,190 L145,215 L170,175 L195,205 L220,168 L245,195 L275,178 L300,200 L330,165 L360,185 L395,158 L420,178 L455,162 L480,180 L510,155 L540,175 L575,160 L600,178 L630,150 L660,170 L695,155 L720,172 L755,145 L785,165 L820,148 L850,168 L880,152 L915,170 L945,148 L975,165 L1010,150 L1040,170 L1075,152 L1105,168 L1140,148 L1170,165 L1205,150 L1235,168 L1270,148 L1300,165 L1340,152 L1380,168 L1440,148 L1440,320Z" fill="url(#fg2)"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="eyebrow">Patagonia · Enero 2027 · La Travesía</div>
+    <div class="hero-name">Lola<em>quince</em></div>
+    <div class="roman">X &nbsp;&nbsp; V</div>
+    <div class="hero-tagline">Un viaje que te conecta con quien sos</div>
+    <div class="hero-pills">
+      <span class="pill">San Antonio Oeste</span>
+      <span class="pill sep">→</span>
+      <span class="pill">Bariloche</span>
+      <span class="pill sep">→</span>
+      <span class="pill">Villa Traful</span>
+      <span class="pill sep">→</span>
+      <span class="pill">Lago Epuyén</span>
+    </div>
+  </div>
+
+  <div class="scroll-cue">
+    <div class="scroll-txt">explorar</div>
+    <div class="scroll-line"></div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-logo">Lola · XV</div>
+  <ul class="nav-links">
+    <li><a href="#mapSection">La ruta</a></li>
+    <li><a href="#galeria">Momentos</a></li>
+    <li><a href="#mensaje">Mensaje</a></li>
+  </ul>
+</nav>
+
+<!-- ══ MAPA ══ -->
+<section id="mapSection" class="sec" style="padding:0">
+  <div class="sec-hdr">
+    <div class="sec-eye">El recorrido</div>
+    <h2 class="sec-title">Un viaje armado <em>con amor</em></h2>
+  </div>
+  <div id="map"></div>
+  <div class="map-progress">
+    <div class="progress-count" id="progressCount">0 de 6</div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
+    <div class="progress-txt" id="progressTxt">destinos visitados</div>
+    <div id="tramoLabel" style="
+      font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--stone);white-space:nowrap;
+      flex-shrink:0;display:none;
+    ">🚂 Tren Patagónico</div>
+    <button id="gpsBtn" onclick="toggleGPS()" style="
+      font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.2em;
+      text-transform:uppercase;background:transparent;border:1px solid var(--fern);
+      color:var(--sage);padding:.4rem 1rem;cursor:pointer;transition:all .3s;
+      white-space:nowrap;flex-shrink:0;
+    ">🛰 GPS</button>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ GALERÍA ══ -->
+<section id="galeria" class="sec">
+  <div class="gallery-toolbar">
+    <div>
+      <div class="sec-eye" style="text-align:left">Momentos</div>
+      <h2 class="sec-title">Fotos del <em>viaje</em></h2>
+    </div>
+    <button class="btn-add" onclick="openModal()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Agregar momento
+    </button>
+  </div>
+  <div class="photo-grid" id="photoGrid">
+    <div class="empty-gallery">
+      <div class="e-icon">🌿</div>
+      <p>El viaje todavía no empezó.<br>Los momentos van a vivir acá.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ MENSAJE ══ -->
+<section id="mensaje" class="sec" style="text-align:center">
+  <div class="sec-hdr">
+    <div class="sec-eye">Para Lola</div>
+    <h2 class="sec-title">Un <em>regalo</em> que se vive</h2>
+  </div>
+  <div class="msg-card">
+    <div class="msg-text">
+      Elegiste este viaje en lugar de una fiesta. Elegiste la montaña, el lago, el bosque, el kayak, el tren de noche. Eso ya dice todo lo que necesitamos saber de quién sos a los quince.
+    </div>
+    <div class="msg-firma">Con amor · Papá</div>
+  </div>
+</section>
+
+<footer>Lola · XV · <span>Patagonia Argentina</span> · La Travesía</footer>
+
+<!-- ══ MODAL ══ -->
+<div class="overlay" id="modalOverlay" onclick="handleOvClick(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>Agregar momento</h3>
+    <p class="modal-sub">Compartí una foto o recuerdo del viaje</p>
+    <div class="field">
+      <label>¿Quién lo sube?</label>
+      <input type="text" id="fAutor" placeholder="Tu nombre">
+    </div>
+    <div class="field">
+      <label>Destino</label>
+      <select id="fLugar">
+        <option value="">Elegí el lugar</option>
+        <option>Tren Patagónico</option>
+        <option>Bariloche</option>
+        <option>Villa Traful</option>
+        <option>Bosque Sumergido</option>
+        <option>Cerro Monje</option>
+        <option>Cascada Co Lemu</option>
+        <option>Puerto Patriada</option>
+        <option>El Bolsón</option>
+        <option>Lago Epuyén</option>
+        <option>Laguna Los Alerces</option>
+        <option>El Bolsón</option>
+        <option>Otro momento</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>¿Qué pasó ahí?</label>
+      <textarea id="fCaption" placeholder="Un instante, una sensación..."></textarea>
+    </div>
+    <div class="dropzone" id="dz" onclick="document.getElementById('fi').click()">
+      <p id="dzTxt">📷 &nbsp; Tocá para elegir una foto</p>
+    </div>
+    <input type="file" id="fi" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="closeModal()">Cancelar</button>
+      <button class="btn-prim" onclick="submitPhoto()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LIGHTBOX ══ -->
+<div class="lightbox" id="lb" onclick="closeLb()">
+  <div class="lb-close">✕ cerrar</div>
+  <img id="lbImg" src="" alt="">
+</div>
+
+<!-- ══ MUSIC BAR ══ -->
+<div class="music-bar">
+  <button class="music-btn" id="musicBtn" onclick="toggleMusic()">▶</button>
+  <div class="music-info">
+    <div class="music-track">The Winner Takes It All — ABBA</div>
+    <div class="music-artist">Para Lola · La Travesía</div>
+  </div>
+  <div class="music-wave" id="musicWave">
+    <!-- barras generadas por JS -->
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// ══ CANVAS PARTÍCULAS BOSQUE ══
+const canvas = document.getElementById('bgCanvas');
+const ctx    = canvas.getContext('2d');
+let W, H;
+function resizeC(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resizeC(); window.addEventListener('resize', resizeC);
+const pts = Array.from({length:60}, ()=>({
+  x: Math.random()*3000, y: Math.random()*1200,
+  r: Math.random()*.8+.2, a: Math.random()*.25+.05,
+  s: Math.random()*.08+.03, d: Math.random()*Math.PI*2
+}));
+function drawBg(){
+  ctx.clearRect(0,0,W,H);
+  pts.forEach(p=>{
+    p.d += p.s*.01;
+    const al = p.a + Math.sin(p.d)*.08;
+    ctx.beginPath();
+    ctx.arc(p.x%W, p.y%H, p.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(168,184,120,${al})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// ══ MUSIC BAR ══
+const waveEl = document.getElementById('musicWave');
+const heights = [6,10,14,10,18,12,8,16,10,14,8,12,6];
+heights.forEach((h,i)=>{
+  const b = document.createElement('div');
+  b.className = 'wave-bar paused';
+  b.style.cssText = `--h:${h}px;--d:${(0.3+i*.09).toFixed(2)}s;animation-delay:${(i*.07).toFixed(2)}s`;
+  waveEl.appendChild(b);
+});
+
+let musicPlaying = false;
+let audio = null;
+
+function toggleMusic(){
+  if(!audio){
+    // YouTube iframe API para ABBA - The Winner Takes It All
+    const ytDiv = document.createElement('div');
+    ytDiv.id = 'yt-player';
+    ytDiv.style.cssText = 'position:fixed;bottom:60px;right:2rem;width:0;height:0;overflow:hidden;z-index:-1;';
+    document.body.appendChild(ytDiv);
+    const iframe = document.createElement('iframe');
+    iframe.id = 'ytframe';
+    iframe.src = 'https://www.youtube.com/embed/92cwKCU8Z5c?autoplay=1&loop=1&playlist=92cwKCU8Z5c&controls=0&enablejsapi=1';
+    iframe.allow = 'autoplay';
+    iframe.style.cssText = 'width:1px;height:1px;';
+    ytDiv.appendChild(iframe);
+    audio = iframe;
+    musicPlaying = true;
+    document.getElementById('musicBtn').textContent = '⏸';
+    document.querySelectorAll('.wave-bar').forEach(b=>b.classList.remove('paused'));
+    return;
+  }
+  if(musicPlaying){
+    audio.src = audio.src.replace('autoplay=1','autoplay=0');
+    document.getElementById('musicBtn').textContent = '▶';
+    document.querySelectorAll('.wave-bar').forEach(b=>b.classList.add('paused'));
+  } else {
+    audio.src = audio.src.replace('autoplay=0','autoplay=1');
+    document.getElementById('musicBtn').textContent = '⏸';
+    document.querySelectorAll('.wave-bar').forEach(b=>b.classList.remove('paused'));
+  }
+  musicPlaying = !musicPlaying;
+}
+
+// ══ MAPA LEAFLET ══
+const map = L.map('map', {
+  center: [-41.2, -71.5],
+  zoom: 7,
+  zoomControl: true,
+  attributionControl: false
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 18, opacity: 0.7
+}).addTo(map);
+
+// Destinos con coordenadas reales
+const DESTINOS = [
+  {
+    id: 0,
+    name: 'San Antonio Oeste',
+    place: 'Río Negro · Inicio',
+    latlng: [-40.7298, -64.9467],
+    desc: 'El punto de partida. El Tren Patagónico sale de noche con camarote y atraviesa la estepa hasta Bariloche. El viaje empieza antes de llegar.',
+    tags: ['🚂 Tren Patagónico', 'Camarote nocturno', 'Estepa'],
+    status: 'pending', emoji: '🚂'
+  },
+  {
+    id: 1,
+    name: 'Bariloche',
+    place: 'Río Negro',
+    latlng: [-41.1335, -71.3103],
+    desc: 'Llegada en tren, retiro del auto alquilado. Puerta de entrada a la Patagonia de bosques. Se vuelve al final para el vuelo de regreso a Buenos Aires.',
+    tags: ['🚗 Auto alquilado', 'Circuito Chico', 'Cerro Campanario', '✈ Vuelo final'],
+    status: 'pending', emoji: '🏔'
+  },
+  {
+    id: 2,
+    name: 'Villa Traful',
+    place: 'Neuquén · Parque Nacional',
+    latlng: [-40.6667, -71.6833],
+    desc: 'Cuatro noches en el corazón del bosque. Lago cristalino, Bosque Sumergido, Cerro Monje, cascadas, kayak, cabalgatas. Uno de los lugares más bellos de Argentina.',
+    tags: ['🏔 Cerro Monje', '🛶 Bosque Sumergido', '🚣 Kayak & SUP', '🌊 Cascada Co Lemu', '🐴 Cabalgata'],
+    status: 'pending', emoji: '🌲'
+  },
+  {
+    id: 3,
+    name: 'Puerto Patriada',
+    place: 'Chubut · Lago Epuyén',
+    latlng: [-42.1333, -71.5333],
+    desc: 'Cuatro noches en el lago donde los motores están prohibidos. Silencio total. Travesía en kayak, Laguna Los Alerces, SUP, pesca. La Patagonia más quieta.',
+    tags: ['🚣 Travesía kayak', '🥾 Laguna Los Alerces', '🏄 SUP', '🎣 Pesca', '🌿 El Bolsón'],
+    status: 'pending', emoji: '💧'
+  },
+  {
+    id: 4,
+    name: 'El Bolsón',
+    place: 'Río Negro · Comarca Andina',
+    latlng: [-41.9667, -71.5333],
+    desc: 'Excursión desde Puerto Patriada. Feria artesanal, frutos regionales, cervecerías locales. Arándanos, frambuesas y mermeladas caseras directo al productor. Un pueblo con identidad propia.',
+    tags: ['🛖 Feria artesanal', '🍺 Cervecerías', '🫐 Frutas regionales', '🌿 Comarca Andina'],
+    status: 'pending', emoji: '🛖'
+  },
+  {
+    id: 5,
+    name: 'Vuelo de regreso',
+    place: 'Bariloche · Cierre',
+    latlng: [-41.1500, -71.1570],
+    desc: 'Aeropuerto Bariloche. Fin del recorrido, comienzo del recuerdo. Buenos Aires espera.',
+    tags: ['✈ Bariloche → BsAs', 'Fin de la travesía'],
+    status: 'pending', emoji: '✈'
+  }
+];
+
+// Rutas entre destinos (coordenadas reales aproximadas)
+const RUTAS = [
+  // San Antonio → Bariloche (tren)
+  [[-40.7298,-64.9467],[-40.9,-67.5],[-41.0,-69.8],[-41.1335,-71.3103]],
+  // Bariloche → Villa Traful (Ruta 65)
+  [[-41.1335,-71.3103],[-41.05,-71.38],[-40.92,-71.52],[-40.78,-71.60],[-40.6667,-71.6833]],
+  // Villa Traful → Puerto Patriada (via Bariloche y Ruta 40 sur)
+  [[-40.6667,-71.6833],[-40.9,-71.55],[-41.1335,-71.3103],[-41.4,-71.40],[-41.8,-71.45],[-42.1333,-71.5333]],
+  // Puerto Patriada → El Bolsón
+  [[-42.1333,-71.5333],[-42.0800,-71.5333],[-41.9667,-71.5333]],
+  // El Bolsón → Bariloche aeropuerto
+  [[-41.9667,-71.5333],[-41.7,-71.45],[-41.4,-71.35],[-41.1500,-71.1570]]
+];
+
+const lineStyle = { color:'#4e6e35', weight:2, dashArray:'6 5', opacity:0.5 };
+const lineActive = { color:'#c8980a', weight:2.5, dashArray:'none', opacity:0.9 };
+
+// Solo líneas activas (el rastro que va quedando)
+const activeLines = RUTAS.map(() => null); // se crean dinámicamente al visitar
+
+// Rastro punteado entre nodos visitados
+let trailLine = null;
+function updateTrail() {
+  if(trailLine) map.removeLayer(trailLine);
+  const visited = DESTINOS.filter(d => d.status === 'visited');
+  if(visited.length < 1) return;
+  // incluir posición actual si hay GPS
+  const points = visited.map(d => d.latlng);
+  if(gpsLatLng) points.push(gpsLatLng);
+  if(points.length < 2) return;
+  trailLine = L.polyline(points, {
+    color: '#c8980a',
+    weight: 3,
+    dashArray: '8 6',
+    opacity: 0.85,
+    lineCap: 'round'
+  }).addTo(map);
+}
+
+// Crear marcadores estilo juego
+function makeIcon(d) {
+  const state = d.status === 'visited' ? 'visited' : (d.id === 0 ? 'active' : 'locked');
+  return L.divIcon({
+    className: '',
+    html: `<div class="node-marker ${state}" id="node-marker-${d.id}">
+      <div class="node-ring"></div>
+      <div class="node-body">${d.emoji}</div>
+      <div class="node-star">✦</div>
+      <div class="node-label">${d.name.split(' ')[0]}</div>
+    </div>`,
+    iconSize: [70, 70],
+    iconAnchor: [35, 35],
+    popupAnchor: [0, -38]
+  });
+}
+
+const markers = DESTINOS.map(d => {
+  const m = L.marker(d.latlng, { icon: makeIcon(d) }).addTo(map);
+  m.on('click', () => openPopup(d.id));
+  return m;
+});
+
+const fullRouteLine = L.polyline(DESTINOS.map(d=>d.latlng), {
+  color:'#2a3820', weight:1, dashArray:'3 10', opacity:0.25
+}).addTo(map);
+
+let openPopupId = null;
+
+function openPopup(id) {
+  const d = DESTINOS[id];
+  const tagsHtml = d.tags.map(t=>`<span class="popup-tag">${t}</span>`).join('');
+  const isVisited = d.status === 'visited';
+  L.popup({ maxWidth:280, closeButton:true })
+    .setLatLng(d.latlng)
+    .setContent(`
+      <div class="popup-place">${d.place}</div>
+      <div class="popup-name">${d.name}</div>
+      <div class="popup-desc">${d.desc}</div>
+      <div class="popup-tags">${tagsHtml}</div>
+      <div class="popup-actions">
+        <span class="popup-status ${isVisited?'visited':'pending'}">${isVisited?'✦ Visitado':'Pendiente'}</span>
+        <button class="popup-btn" onclick="toggleVisited(${id})">${isVisited?'Desmarcar':'✓ Marcar visitado'}</button>
+      </div>
+    `)
+    .openOn(map);
+  openPopupId = id;
+}
+
+function spawnParticles(x, y) {
+  const colors = ['#c8980a','#98b070','#e8c870','#6a8a48','#f0e8d0'];
+  for(let i=0;i<18;i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (Math.PI*2*i)/18;
+    const dist  = 60 + Math.random()*60;
+    const dur   = (0.5+Math.random()*0.5).toFixed(2)+'s';
+    const size  = 4+Math.random()*6;
+    p.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;--dur:${dur};`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 1000);
+  }
+}
+
+function updateMarkerState(id, state) {
+  const el = document.getElementById('node-marker-'+id);
+  if(!el) return;
+  el.className = 'node-marker ' + state;
+}
+
+function toggleVisited(id) {
+  const d = DESTINOS[id];
+  d.status = d.status==='visited' ? 'pending' : 'visited';
+
+  if(d.status==='visited') {
+    const el = document.getElementById('node-marker-'+id);
+    if(el){ const r=el.getBoundingClientRect(); spawnParticles(r.left+r.width/2, r.top+r.height/2); }
+  }
+
+  updateMarkerState(id, d.status==='visited' ? 'visited' : 'active');
+
+  // activar siguiente nodo
+  if(d.status==='visited') {
+    const next = DESTINOS.find((x,i) => i > id && x.status !== 'visited');
+    if(next) updateMarkerState(next.id, 'active');
+  }
+
+  // actualizar rastro del recorrido
+  updateTrail();
+  // refrescar ícono GPS si está activo (puede cambiar de tramo)
+  if(gpsMarker && gpsLatLng) {
+    gpsMarker.setIcon(makeGPSIcon(getTramoActual()));
+  }
+
+  const count = DESTINOS.filter(x=>x.status==='visited').length;
+  document.getElementById('progressCount').textContent = count + ' de ' + DESTINOS.length;
+  document.getElementById('progressFill').style.width = (count/DESTINOS.length*100)+'%';
+  if(count===DESTINOS.length) document.getElementById('progressTxt').textContent = '¡travesía completa! 🌿';
+
+  map.closePopup();
+  setTimeout(()=>openPopup(id), 120);
+}
+
+// ══ GPS ══
+let gpsLatLng = null;
+let gpsMarker = null;
+let gpsCircle = null;
+let gpsWatcher = null;
+const GPS_RADIUS = 5000; // metros para auto-marcar (5km)
+
+// Íconos según tramo del viaje
+const TRAMO_ICONS = {
+  tren:    { emoji: '🚂', label: 'Tren Patagónico', color: '#8a6030' },
+  auto:    { emoji: '🚗', label: 'En auto',          color: '#4a7a30' },
+  kayak:   { emoji: '🚣', label: 'En kayak',         color: '#2a6080' },
+  avion:   { emoji: '✈',  label: 'Vuelo',            color: '#506080' },
+  default: { emoji: '📍', label: 'En camino',        color: '#6a8a48' },
+};
+
+// Tramo según destinos visitados
+function getTramoActual() {
+  const visitados = DESTINOS.filter(d => d.status === 'visited').map(d => d.id);
+  const maxId = visitados.length ? Math.max(...visitados) : -1;
+  if(maxId < 0)  return 'tren';   // antes de arrancar o en tren
+  if(maxId === 0) return 'tren';  // salió de San Antonio, en tren
+  if(maxId === 1) return 'auto';  // salió de Bariloche, en auto
+  if(maxId === 2) return 'auto';  // salió de Traful, en auto
+  if(maxId === 3) return 'kayak'; // en zona Patriada
+  if(maxId === 4) return 'auto';  // volviendo de El Bolsón
+  if(maxId === 5) return 'avion'; // vuelo
+  return 'default';
+}
+
+function makeGPSIcon(tramo) {
+  const t = TRAMO_ICONS[tramo] || TRAMO_ICONS.default;
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      position:relative;
+      display:flex;align-items:center;justify-content:center;
+      width:44px;height:44px;
+    ">
+      <!-- halo pulsante -->
+      <div style="
+        position:absolute;inset:0;border-radius:50%;
+        border:2px solid ${t.color};
+        animation:ringPulse 1.8s ease-in-out infinite;
+        opacity:0.6;
+      "></div>
+      <!-- círculo fondo -->
+      <div style="
+        width:36px;height:36px;border-radius:50%;
+        background:radial-gradient(circle at 35% 35%, #2a2016dd, #0d0b08ee);
+        border:2px solid ${t.color};
+        display:flex;align-items:center;justify-content:center;
+        font-size:1.1rem;
+        box-shadow:0 0 16px ${t.color}88, 0 2px 8px rgba(0,0,0,.6);
+        position:relative;z-index:2;
+      ">${t.emoji}</div>
+      <!-- etiqueta -->
+      <div style="
+        position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+        white-space:nowrap;font-family:'DM Mono',monospace;font-size:0.48rem;
+        letter-spacing:.12em;text-transform:uppercase;
+        color:${t.color};background:rgba(10,10,6,.85);
+        padding:1px 5px;pointer-events:none;
+      ">${t.label}</div>
+    </div>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22]
+  });
+}
+
+function startGPS() {
+  if(!navigator.geolocation) {
+    alert('Tu dispositivo no soporta GPS');
+    return;
+  }
+  const btn = document.getElementById('gpsBtn');
+  btn.textContent = '⏳ Buscando...';
+  btn.style.borderColor = 'var(--amber)';
+
+  gpsWatcher = navigator.geolocation.watchPosition(
+    pos => onGPSUpdate(pos),
+    err => onGPSError(err),
+    { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+  );
+}
+
+function stopGPS() {
+  if(gpsWatcher) navigator.geolocation.clearWatch(gpsWatcher);
+  if(gpsMarker) map.removeLayer(gpsMarker);
+  if(gpsCircle) map.removeLayer(gpsCircle);
+  gpsLatLng = null; gpsMarker = null; gpsCircle = null; gpsWatcher = null;
+  const btn = document.getElementById('gpsBtn');
+  btn.textContent = '🛰 GPS';
+  btn.style.borderColor = 'var(--fern)';
+  btn.style.color = 'var(--sage)';
+  const tl = document.getElementById('tramoLabel');
+  if(tl) tl.style.display = 'none';
+  updateTrail();
+}
+
+let gpsActive = false;
+function toggleGPS() {
+  if(gpsActive) { stopGPS(); gpsActive = false; }
+  else { startGPS(); gpsActive = true; }
+}
+
+function onGPSUpdate(pos) {
+  const lat = pos.coords.latitude;
+  const lng = pos.coords.longitude;
+  const acc = pos.coords.accuracy;
+  gpsLatLng = [lat, lng];
+
+  // actualizar marcador GPS con ícono del tramo actual
+  const tramoActual = getTramoActual();
+  const iconActual  = makeGPSIcon(tramoActual);
+  if(!gpsMarker) {
+    gpsMarker = L.marker([lat,lng], {icon: iconActual, zIndexOffset:1000}).addTo(map);
+  } else {
+    gpsMarker.setLatLng([lat,lng]);
+    gpsMarker.setIcon(iconActual);
+  }
+
+  // actualizar label del tramo en la barra
+  const tramoInfo = TRAMO_ICONS[tramoActual] || TRAMO_ICONS.default;
+  const tramoEl = document.getElementById('tramoLabel');
+  if(tramoEl) tramoEl.textContent = tramoInfo.emoji + ' ' + tramoInfo.label;
+
+  // círculo de precisión
+  if(gpsCircle) map.removeLayer(gpsCircle);
+  gpsCircle = L.circle([lat,lng], {
+    radius: Math.min(acc, 500),
+    color: '#2a80c8', fillColor: '#2a80c8',
+    fillOpacity: 0.08, weight: 1, opacity: 0.3
+  }).addTo(map);
+
+  // actualizar botón
+  const btn = document.getElementById('gpsBtn');
+  btn.textContent = '🛰 GPS activo';
+  btn.style.borderColor = '#98b070';
+  btn.style.color = '#c8d8a0';
+  const tl = document.getElementById('tramoLabel');
+  if(tl) tl.style.display = 'block';
+
+  // actualizar rastro
+  updateTrail();
+
+  // auto-marcar si estoy cerca de un destino pendiente
+  DESTINOS.forEach(d => {
+    if(d.status === 'visited') return;
+    const dist = map.distance([lat,lng], d.latlng);
+    if(dist < GPS_RADIUS) {
+      const el = document.getElementById('node-marker-'+d.id);
+      if(el) {
+        el.style.animation = 'none';
+        setTimeout(() => {
+          // mostrar notificación
+          showGPSNotif(d);
+        }, 300);
+      }
+    }
+  });
+}
+
+function onGPSError(err) {
+  const btn = document.getElementById('gpsBtn');
+  btn.textContent = '🛰 GPS';
+  btn.style.borderColor = 'var(--fern)';
+  btn.style.color = 'var(--sage)';
+  gpsActive = false;
+  console.warn('GPS error:', err.message);
+}
+
+// notificación GPS cerca de destino
+let notifTimeout = null;
+function showGPSNotif(d) {
+  let notif = document.getElementById('gpsNotif');
+  if(!notif) {
+    notif = document.createElement('div');
+    notif.id = 'gpsNotif';
+    notif.style.cssText = `
+      position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+      background:#1c1610; border:1px solid #c8980a;
+      padding:1rem 1.5rem; z-index:9000;
+      font-family:'DM Mono',monospace; font-size:.62rem;
+      letter-spacing:.2em; text-transform:uppercase;
+      color:var(--amber); text-align:center;
+      box-shadow:0 4px 24px rgba(0,0,0,.6);
+      animation: riseIn .4s ease;
+      display:flex; flex-direction:column; gap:.6rem; align-items:center;
+    `;
+    document.body.appendChild(notif);
+  }
+  notif.innerHTML = `
+    <div style="color:var(--cream);font-family:'Playfair Display',serif;font-style:italic;font-size:.9rem">
+      Estás cerca de ${d.name}
+    </div>
+    <div style="display:flex;gap:.6rem">
+      <button onclick="autoMarkVisited(${d.id})" style="
+        font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.2em;
+        text-transform:uppercase;background:var(--forest);border:1px solid var(--fern);
+        color:var(--cream);padding:.4rem 1rem;cursor:pointer;
+      ">✓ Marcar visitado</button>
+      <button onclick="dismissNotif()" style="
+        font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.2em;
+        text-transform:uppercase;background:transparent;border:1px solid var(--rock);
+        color:var(--stone);padding:.4rem .8rem;cursor:pointer;
+      ">Ignorar</button>
+    </div>
+  `;
+  notif.style.display = 'flex';
+  if(notifTimeout) clearTimeout(notifTimeout);
+  notifTimeout = setTimeout(dismissNotif, 12000);
+}
+
+function dismissNotif() {
+  const n = document.getElementById('gpsNotif');
+  if(n) n.style.display = 'none';
+}
+
+function autoMarkVisited(id) {
+  dismissNotif();
+  const d = DESTINOS[id];
+  if(d.status !== 'visited') toggleVisited(id);
+}
+
+// ══ GALERÍA ══
+let photos = [], selFile = null;
+function openModal(){ document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  ['fAutor','fCaption'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fLugar').value='';
+  document.getElementById('dzTxt').innerHTML='📷 &nbsp; Tocá para elegir una foto';
+  selFile=null;
+}
+function handleOvClick(e){ if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+function handleFile(f){
+  if(!f) return;
+  selFile=f;
+  document.getElementById('dzTxt').innerHTML=`<strong style="color:var(--lichen)">${f.name}</strong>`;
+}
+const dz=document.getElementById('dz');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('over');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/')) handleFile(f);
+});
+function submitPhoto(){
+  const autor=document.getElementById('fAutor').value.trim()||'Anónimo';
+  const lugar=document.getElementById('fLugar').value||'La Travesía';
+  const caption=document.getElementById('fCaption').value.trim();
+  if(!selFile&&!caption){alert('Agregá una foto o un texto 🌿');return;}
+  if(selFile){
+    const r=new FileReader();
+    r.onload=e=>{photos.unshift({src:e.target.result,autor,lugar,caption,id:Date.now()});renderGrid();closeModal();};
+    r.readAsDataURL(selFile);
+  } else {
+    photos.unshift({src:null,autor,lugar,caption,id:Date.now()});renderGrid();closeModal();
+  }
+}
+function renderGrid(){
+  const g=document.getElementById('photoGrid');
+  if(!photos.length){
+    g.innerHTML='<div class="empty-gallery"><div class="e-icon">🌿</div><p>El viaje todavía no empezó.<br>Los momentos van a vivir acá.</p></div>';
+    return;
+  }
+  g.innerHTML=photos.map((p,i)=>`
+    <div class="photo-card" style="animation-delay:${i*.07}s">
+      ${p.src?`<img src="${p.src}" alt="${p.caption||p.lugar}" loading="lazy" onclick="openLb('${p.src.replace(/'/g,"\\'")}')">`:
+      `<div style="aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;background:var(--moss);font-size:2.5rem;opacity:.4">📍</div>`}
+      <div class="card-body">
+        <div class="card-place">${p.lugar}</div>
+        ${p.caption?`<div class="card-caption">${p.caption}</div>`:''}
+        <div class="card-author">— ${p.autor}</div>
+      </div>
+    </div>`).join('');
+}
+function openLb(src){document.getElementById('lbImg').src=src;document.getElementById('lb').classList.add('open');}
+function closeLb(){document.getElementById('lb').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeLb();}});
+
+// exponer funciones globales necesarias para onclick en HTML
+window.toggleMusic   = toggleMusic;
+window.openPopup     = openPopup;
+window.toggleGPS     = toggleGPS;
+window.autoMarkVisited = autoMarkVisited;
+window.dismissNotif  = dismissNotif;
+window.toggleVisited = toggleVisited;
+window.openModal     = openModal;
+window.closeModal    = closeModal;
+window.handleOvClick = handleOvClick;
+window.handleFile    = handleFile;
+window.submitPhoto   = submitPhoto;
+window.openLb        = openLb;
+window.closeLb       = closeLb;
+
+}); // fin DOMContentLoaded
+</script>
+</body>
+</html>
