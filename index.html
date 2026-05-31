@@ -43,7 +43,8 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
   padding: 2rem;
 }
 .hero-bg {
@@ -483,7 +484,96 @@ footer span { color:var(--fern); }
   <div class="hero-bg"></div>
 
   <!-- Silueta bosque patagónico -->
-  <svg class="hero-forest" viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- ══ TRANSPORTES SVG ══ -->
+  <div style="position:absolute;bottom:18%;left:0;right:0;height:110px;overflow:visible;pointer-events:none;z-index:6;" id="transportScene">
+
+    <!-- TREN -->
+    <div id="transTren" style="position:absolute;bottom:0;opacity:0;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <svg viewBox="0 0 220 62" height="62" style="filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))">
+        <circle class="smoke s1" cx="30" cy="14" r="5" fill="#6a6050"/>
+        <circle class="smoke s2" cx="22" cy="8"  r="4" fill="#5a5040"/>
+        <circle class="smoke s3" cx="14" cy="3"  r="3" fill="#4a4030"/>
+        <rect x="24" y="18" width="8" height="10" fill="#3a3020" rx="1"/>
+        <rect x="10" y="28" width="80" height="22" fill="#3a2a10" rx="3"/>
+        <rect x="6"  y="32" width="88" height="14" fill="#4a3820" rx="2"/>
+        <rect x="72" y="22" width="28" height="18" fill="#2a1e0a" rx="2"/>
+        <rect x="76" y="25" width="10" height="8"  fill="#1a3a2a" rx="1" opacity="0.8"/>
+        <rect x="88" y="25" width="8"  height="8"  fill="#1a3a2a" rx="1" opacity="0.8"/>
+        <rect x="10" y="44" width="80" height="4"  fill="#5a4828" rx="1"/>
+        <circle cx="28" cy="52" r="7" fill="#2a2010" stroke="#6a5830" stroke-width="2"/>
+        <circle cx="28" cy="52" r="3" fill="#4a3820"/>
+        <circle cx="72" cy="52" r="7" fill="#2a2010" stroke="#6a5830" stroke-width="2"/>
+        <circle cx="72" cy="52" r="3" fill="#4a3820"/>
+        <circle cx="10" cy="37" r="4" fill="#c8a840" opacity="0.9"/>
+        <circle cx="10" cy="37" r="2" fill="#ffe890"/>
+        <rect x="96"  y="30" width="56" height="20" fill="#2a3818" rx="2"/>
+        <rect x="100" y="33" width="12" height="8"  fill="#1a2a10" rx="1" opacity="0.7"/>
+        <rect x="116" y="33" width="12" height="8"  fill="#1a2a10" rx="1" opacity="0.7"/>
+        <rect x="132" y="33" width="12" height="8"  fill="#1a2a10" rx="1" opacity="0.7"/>
+        <circle cx="108" cy="53" r="5" fill="#2a2010" stroke="#4a3820" stroke-width="1.5"/>
+        <circle cx="140" cy="53" r="5" fill="#2a2010" stroke="#4a3820" stroke-width="1.5"/>
+        <rect x="158" y="32" width="52" height="18" fill="#2a1e0a" rx="2"/>
+        <rect x="162" y="35" width="10" height="7"  fill="#1a1408" rx="1" opacity="0.7"/>
+        <rect x="176" y="35" width="10" height="7"  fill="#1a1408" rx="1" opacity="0.7"/>
+        <circle cx="170" cy="53" r="5" fill="#2a2010" stroke="#4a3820" stroke-width="1.5"/>
+        <circle cx="200" cy="53" r="5" fill="#2a2010" stroke="#4a3820" stroke-width="1.5"/>
+        <line x1="0" y1="60" x2="220" y2="60" stroke="#4a3820" stroke-width="1.5"/>
+      </svg>
+      <div style="font-family:'DM Mono',monospace;font-size:.44rem;letter-spacing:.22em;text-transform:uppercase;color:#98b070;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.9)">Tren Patagónico</div>
+    </div>
+
+    <!-- AUTO -->
+    <div id="transAuto" style="position:absolute;bottom:0;opacity:0;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <svg viewBox="0 0 140 56" height="56" style="filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))">
+        <ellipse cx="70" cy="53" rx="55" ry="3" fill="#000" opacity="0.2"/>
+        <rect x="8"  y="32" width="124" height="16" fill="#3a4828" rx="4"/>
+        <path d="M20,32 Q30,16 50,14 L90,14 Q110,14 118,32 Z" fill="#4a5c30"/>
+        <path d="M38,32 Q42,20 52,18 L68,18 L68,32 Z" fill="#1a2a18" opacity="0.8"/>
+        <rect x="72" y="18" width="28" height="14" fill="#1a2a18" rx="1" opacity="0.8"/>
+        <rect x="8"  y="40" width="124" height="4" fill="#2a3818" rx="2"/>
+        <circle cx="38"  cy="48" r="8" fill="#1a1a10" stroke="#3a3820" stroke-width="2"/>
+        <circle cx="38"  cy="48" r="3" fill="#2a2810"/>
+        <circle cx="102" cy="48" r="8" fill="#1a1a10" stroke="#3a3820" stroke-width="2"/>
+        <circle cx="102" cy="48" r="3" fill="#2a2810"/>
+        <ellipse cx="130" cy="38" rx="5" ry="3" fill="#c8b840" opacity="0.85"/>
+        <rect x="8" y="36" width="4" height="5" fill="#8a2010" rx="1" opacity="0.8"/>
+        <rect x="30" y="12" width="78" height="4" fill="#2a2010" rx="1"/>
+        <rect x="34" y="4"  width="20" height="10" fill="#8a4820" rx="2"/>
+        <rect x="37" y="6"  width="14" height="2"  fill="#a05828" rx="1"/>
+        <line x1="44" y1="4" x2="44" y2="14" stroke="#6a3810" stroke-width="1"/>
+        <rect x="58" y="2"  width="16" height="11" fill="#4a3878" rx="2"/>
+        <rect x="61" y="4"  width="10" height="2"  fill="#5a4888" rx="1"/>
+        <line x1="66" y1="2" x2="66" y2="13" stroke="#3a2868" stroke-width="1"/>
+        <rect x="78" y="5"  width="18" height="8"  fill="#386030" rx="2"/>
+        <rect x="81" y="7"  width="12" height="2"  fill="#487040" rx="1"/>
+        <line x1="87" y1="5" x2="87" y2="13" stroke="#285020" stroke-width="1"/>
+      </svg>
+      <div style="font-family:'DM Mono',monospace;font-size:.44rem;letter-spacing:.22em;text-transform:uppercase;color:#98b070;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.9)">Ruta 65 · Patagonia</div>
+    </div>
+
+    <!-- AVIÓN -->
+    <div id="transAvion" style="position:absolute;bottom:10px;opacity:0;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <svg viewBox="0 0 160 70" height="54" style="filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))">
+        <path d="M60,30 Q110,28 148,34 Q152,35 148,36 Q110,42 60,40 Q50,38 52,35 Z" fill="#d8d0b8"/>
+        <path d="M148,34 Q158,35 148,36 Z" fill="#c8c0a8"/>
+        <path d="M90,35 Q100,20 130,18 Q128,28 110,33 Z" fill="#b8b0a0"/>
+        <path d="M90,35 Q100,50 130,52 Q128,42 110,37 Z" fill="#a8a090"/>
+        <path d="M66,34 Q70,26 85,24 Q84,30 76,33 Z" fill="#b0a898"/>
+        <path d="M66,36 Q70,44 85,46 Q84,40 76,37 Z" fill="#a8a090"/>
+        <path d="M62,30 Q68,18 72,20 L72,30 Z" fill="#c8b898"/>
+        <circle cx="110" cy="34" r="2.5" fill="#1a3a4a" opacity="0.7"/>
+        <circle cx="120" cy="34" r="2.5" fill="#1a3a4a" opacity="0.7"/>
+        <circle cx="130" cy="34" r="2.5" fill="#1a3a4a" opacity="0.7"/>
+        <circle cx="140" cy="34" r="2"   fill="#1a3a4a" opacity="0.6"/>
+        <ellipse cx="112" cy="22" rx="8" ry="4" fill="#888078"/>
+        <ellipse cx="112" cy="22" rx="5" ry="2.5" fill="#686058"/>
+      </svg>
+      <div style="font-family:'DM Mono',monospace;font-size:.44rem;letter-spacing:.22em;text-transform:uppercase;color:#98b070;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.9)">Bariloche → Buenos Aires</div>
+    </div>
+
+  </div>
+
+    <svg class="hero-forest" style="z-index:2" viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="#3a5228" stop-opacity="0.7"/>
@@ -1245,6 +1335,28 @@ function renderGrid(){
 function openLb(src){document.getElementById('lbImg').src=src;document.getElementById('lb').classList.add('open');}
 function closeLb(){document.getElementById('lb').classList.remove('open');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeLb();}});
+
+// ══ TRANSPORTES ANIMADOS HERO ══
+const TRANSPORTES = [
+  { id: 'transTren',  anim: 'goRight', dur: 14000 },
+  { id: 'transAuto',  anim: 'goLeft',  dur: 13000 },
+  { id: 'transAvion', anim: 'flyOver', dur: 16000 },
+  { id: 'transTren',  anim: 'goRight', dur: 14000 },
+  { id: 'transAuto',  anim: 'goRight', dur: 13000 },
+];
+let tIdx = 0;
+function launchNext() {
+  const t = TRANSPORTES[tIdx % TRANSPORTES.length];
+  tIdx++;
+  const el = document.getElementById(t.id);
+  if(!el) { setTimeout(launchNext, 500); return; }
+  el.style.animation = 'none';
+  el.style.opacity   = '0';
+  void el.offsetWidth;
+  el.style.animation = t.anim + ' ' + t.dur + 'ms linear forwards';
+  setTimeout(launchNext, t.dur + 1800);
+}
+setTimeout(launchNext, 2200);
 
 // exponer funciones globales necesarias para onclick en HTML
 window.toggleMusic   = toggleMusic;
